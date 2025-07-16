@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD</title>
+</head>
+<body>
+<div>
+    <th:block th:each="user : ${users}">
+        <h1>
+            <button type="button" onclick="logout()">logout</button>
+
+            <span type="text" placeholder="id" th:value="${user.id}" required></span>
+            <input type="text" th:id="'name' + ${user.id}" placeholder="name" th:value="${user.firstName}" required>
+            <input type="text" th:id="'lastName' + ${user.id}" placeholder="lastName" th:value="${user.lastName}" required>
+            <input type="text" th:id="'email' + ${user.id}" placeholder="email" th:value="${user.email}" required>
+            <button type="button" th:id="${user.id}" onclick="updateUser(this.id)">update user</button>
+            <button type="button" th:id="${user.id}" onclick="deleteUser(this.id)">Delete user</button>
+        </h1>
+    </th:block>
+</div>
+
+<input type="text" id="name" placeholder="insert name" required>
+<input type="text" id="lastName" placeholder="insert lastName" required>
+<input type="text" id="email" placeholder="insert email" required>
+<button onclick="addUser()">add user</button>
+
+<script>
+
+    function logout() {
+        fetch(`http://localhost:8080/logout`, {
+            method: 'get',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+            .then(response => {
+                if (response.ok) {
+                    location.reload()
+                } else {
+                    alert('Ошибка при удалении пользователя');
+                }
+            });
+    }
+    function deleteUser(userId) {
+        if (!userId) {
+            alert('Заполни поля');
+            return;
+        }
+
+        fetch(`http://localhost:8080/delete?id=${userId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+            .then(response => {
+                if (response.ok) {
+                    location.reload()
+                } else {
+                    alert('Ошибка при удалении пользователя');
+                }
+            });
+    }
+
+    function addUser() {
+        const name = document.getElementById('name').value;
+        const lastName = document.getElementById('lastName').value;
+        const email = document.getElementById('email').value;
+        if (!name || !lastName || !email) {
+            alert('Заполни поля');
+            return;
+        }
+
+        fetch(`http://localhost:8080/add?name=${name}&lastName=${lastName}&email=${email}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+            .then(response => {
+                if (response.ok) {
+                    location.reload()
+                } else {
+                    alert('Ошибка при добавлении пользователя');
+                }
+            });
+    }
+
+    function updateUser(userId) {
+        const name = document.getElementById('name' + userId).value;
+        const lastName = document.getElementById('lastName' + userId).value;
+        const email = document.getElementById('email' + userId).value;
+
+        if (!name || !lastName || !email || !userId) {
+            alert('insert');
+            return;
+        }
+
+        fetch(`http://localhost:8080/update?id=${userId}&name=${name}&lastName=${lastName}&email=${email}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+            .then(response => {
+                if (response.ok) {
+                    location.reload()
+                } else {
+                    alert('Ошибка при обновлении пользователя');
+                }
+            });
+    }
+</script>
+</body>
+</html>
