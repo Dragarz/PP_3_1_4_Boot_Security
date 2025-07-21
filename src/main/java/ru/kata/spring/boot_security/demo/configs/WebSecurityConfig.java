@@ -23,7 +23,7 @@ public class WebSecurityConfig {
         http
                 .securityMatcher("/**")
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/user/**").hasAnyRole("USER","ADMIN")
+                        .requestMatchers("/user/**").hasRole("USER")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/", "/index/**").permitAll()
                         .anyRequest().authenticated()

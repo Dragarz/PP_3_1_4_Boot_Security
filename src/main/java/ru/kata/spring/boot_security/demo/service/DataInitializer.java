@@ -1,58 +1,37 @@
 package ru.kata.spring.boot_security.demo.service;
 
 import java.util.List;
+import java.util.Set;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import ru.kata.spring.boot_security.demo.dao.UserDaoImp;
+import org.springframework.transaction.annotation.Transactional;
+import ru.kata.spring.boot_security.demo.dao.UserDao;
 import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
 
 @Component
+@RequiredArgsConstructor
 public class DataInitializer {
-    private final UserDaoImp userRepository;
+
+    private final UserDao userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public DataInitializer(UserDaoImp userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     @PostConstruct
+    @Transactional
     public void init() {
-        //Добавляем админа с ролью ADMIN и USER
         Role adminRole = new Role();
         Role userRole = new Role();
         adminRole.setRole("ROLE_ADMIN");
         userRole.setRole("ROLE_USER");
 
-        User admin = new User();
-        admin.setUsername("admin");
-        admin.setFirstName("Vasya");
-        admin.setEmail("asd@sad.ru");
-        admin.setLastName("Petrov");
-        admin.setPassword(passwordEncoder.encode("admin"));
-        admin.setRoles(List.of(adminRole, userRole));
-        userRole.setUser(admin);
-        adminRole.setUser(admin);
+        Set<Role> roles = Set.of(adminRole,userRole);
 
+        User admin = new User("admin", "Petrov", "asd@sad.ru", passwordEncoder.encode("admin"), roles);
 
-        userRepository.add(admin);
-
-        //Добавляем пользвателя user с ролью USER
-        Role userRole2 = new Role();
-        userRole2.setRole("ROLE_USER");
-
-        User user = new User();
-        user.setUsername("user");
-        user.setFirstName("Vanya");
-        user.setEmail("asd@sad.ru");
-        user.setLastName("Petrov");
-        user.setPassword(passwordEncoder.encode("user"));
-        user.setRoles(List.of(userRole2));
-        userRole2.setUser(user);
-
-        userRepository.add(user);
-
+        User user = new User("user", "Petrov", "asd@sad.ru", passwordEncoder.encode("user"), Set.of(userRole));
+        userRepository.saveAllAndFlush(List.of(user, admin));
     }
 }

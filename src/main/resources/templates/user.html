@@ -12,9 +12,15 @@
             <button type="button" onclick="logout()">logout</button>
 
             <span type="text" placeholder="id" th:value="${user.id}" required></span>
-            <input type="text" th:id="'name' + ${user.id}" placeholder="name" th:value="${user.firstName}" required>
+            <input type="text" th:id="'name' + ${user.id}" placeholder="name" th:value="${user.username}" required>
             <input type="text" th:id="'lastName' + ${user.id}" placeholder="lastName" th:value="${user.lastName}" required>
             <input type="text" th:id="'email' + ${user.id}" placeholder="email" th:value="${user.email}" required>
+            <input type="text" th:id="'password' + ${user.id}" placeholder="lastName" th:value="${user.password}" required>
+            <select multiple th:id="'roles' + ${user.id}">
+                <option th:each="role : ${user.roles}"
+                        th:text="${role.role}"
+                        th:value="${role.id}"></option>
+            </select>
             <button type="button" th:id="${user.id}" onclick="updateUser(this.id)">update user</button>
             <button type="button" th:id="${user.id}" onclick="deleteUser(this.id)">Delete user</button>
         </h1>
@@ -24,6 +30,11 @@
 <input type="text" id="name" placeholder="insert name" required>
 <input type="text" id="lastName" placeholder="insert lastName" required>
 <input type="text" id="email" placeholder="insert email" required>
+<input type="text" id="password" placeholder="insert password" required>
+<select name="roles[]" id="roles" multiple>
+    <option value="USER" selected>USER</option>
+    <option value="ADMIN" selected>ADMIN</option>
+</select>
 <button onclick="addUser()">add user</button>
 
 <script>
@@ -65,23 +76,24 @@
     }
 
     function addUser() {
-        const name = document.getElementById('name').value;
-        const lastName = document.getElementById('lastName').value;
-        const email = document.getElementById('email').value;
-        if (!name || !lastName || !email) {
-            alert('Заполни поля');
-            return;
-        }
+        const data = {
+            name: document.getElementById('name').value,
+            lastName: document.getElementById('lastName').value,
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value,
+            roles: Array.from(document.getElementById('roles').selectedOptions).map(option => option.value)
+        };
 
-        fetch(`http://localhost:8080/add?name=${name}&lastName=${lastName}&email=${email}`, {
+        fetch("http://localhost:8080/add", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-            }
+            },
+            body: JSON.stringify(data)
         })
             .then(response => {
                 if (response.ok) {
-                    location.reload()
+                    location.reload();
                 } else {
                     alert('Ошибка при добавлении пользователя');
                 }
@@ -89,26 +101,27 @@
     }
 
     function updateUser(userId) {
-        const name = document.getElementById('name' + userId).value;
-        const lastName = document.getElementById('lastName' + userId).value;
-        const email = document.getElementById('email' + userId).value;
 
-        if (!name || !lastName || !email || !userId) {
-            alert('insert');
-            return;
-        }
+        const data = {
+            name: document.getElementById('name' + userId).value,
+            lastName: document.getElementById('lastName' + userId).value,
+            email: document.getElementById('email' + userId).value,
+            password: document.getElementById('password' + userId).value,
+            roles: Array.from(document.getElementById('roles' + userId).selectedOptions).map(option => option.text)
+        };
 
-        fetch(`http://localhost:8080/update?id=${userId}&name=${name}&lastName=${lastName}&email=${email}`, {
+        fetch(`http://localhost:8080/update?id=${userId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-            }
+            },
+            body: JSON.stringify(data)
         })
             .then(response => {
                 if (response.ok) {
-                    location.reload()
+                    location.reload();
                 } else {
-                    alert('Ошибка при обновлении пользователя');
+                    alert('Ошибка при добавлении пользователя');
                 }
             });
     }

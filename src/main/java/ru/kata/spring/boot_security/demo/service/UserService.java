@@ -8,7 +8,7 @@ public interface UserService {
 
     void deleteUser(long userId);
 
-    void addUser(String name, String lastName, String email);
+    void addUser(String name, String lastName, String email, String password, String[] roles);
 
-    void updateUser(long id, String name, String lastName, String email);
+    void updateUser(long id, String name, String lastName, String email, String password, String[] roles);
 }
