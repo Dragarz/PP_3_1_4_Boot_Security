@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,7 +20,9 @@ public class AdminController {
     private final UserService userService;
 
     @GetMapping(value = "/admin")
-    public String adminPage() {
+    public String userPage(ModelMap model) {
+        var users = userService.listUsers();
+        model.addAttribute("users", users);
         return "admin";
     }
 

@@ -1,14 +1,46 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<html lang="ru">
 <head>
-    <title>Spring Security Example</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD</title>
 </head>
 <body>
-<h1>ADMIN, welcome spring boot security page!</h1>
-<button type="button" onclick="logout()">logout</button>
+<div>
+    <button type="button" onclick="logout()">logout</button>
+</div>
+<div>
+    <th:block th:each="user : ${users}">
+        <h1>
 
+            <span type="text" placeholder="id" th:value="${user.id}" required></span>
+            <input type="text" th:id="'name' + ${user.id}" placeholder="name" th:value="${user.username}" required>
+            <input type="text" th:id="'lastName' + ${user.id}" placeholder="lastName" th:value="${user.lastName}" required>
+            <input type="text" th:id="'email' + ${user.id}" placeholder="email" th:value="${user.email}" required>
+            <input type="text" th:id="'password' + ${user.id}" placeholder="lastName" th:value="${user.password}" required>
+            <select multiple th:id="'roles' + ${user.id}">
+                <option th:each="role : ${user.roles}"
+                        th:text="${role.role}"
+                        th:value="${role.id}"></option>
+            </select>
+            <button type="button" th:id="${user.id}" onclick="updateUser(this.id)">update user</button>
+            <button type="button" th:id="${user.id}" onclick="deleteUser(this.id)">Delete user</button>
+        </h1>
+    </th:block>
+</div>
+
+<input type="text" id="name" placeholder="insert name" required>
+<input type="text" id="lastName" placeholder="insert lastName" required>
+<input type="text" id="email" placeholder="insert email" required>
+<input type="text" id="password" placeholder="insert password" required>
+<select name="roles[]" id="roles" multiple>
+    <option value="USER" selected>USER</option>
+    <option value="ADMIN" selected>ADMIN</option>
+</select>
+<button onclick="addUser()">add user</button>
 
 <script>
+
     function logout() {
         fetch(`http://localhost:8080/logout`, {
             method: 'get',
@@ -21,6 +53,77 @@
                     location.reload()
                 } else {
                     alert('Ошибка при удалении пользователя');
+                }
+            });
+    }
+    function deleteUser(userId) {
+        if (!userId) {
+            alert('Заполни поля');
+            return;
+        }
+
+        fetch(`http://localhost:8080/delete?id=${userId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+            .then(response => {
+                if (response.ok) {
+                    location.reload()
+                } else {
+                    alert('Ошибка при удалении пользователя');
+                }
+            });
+    }
+
+    function addUser() {
+        const data = {
+            name: document.getElementById('name').value,
+            lastName: document.getElementById('lastName').value,
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value,
+            roles: Array.from(document.getElementById('roles').selectedOptions).map(option => option.value)
+        };
+
+        fetch("http://localhost:8080/add", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Ошибка при добавлении пользователя');
+                }
+            });
+    }
+
+    function updateUser(userId) {
+
+        const data = {
+            name: document.getElementById('name' + userId).value,
+            lastName: document.getElementById('lastName' + userId).value,
+            email: document.getElementById('email' + userId).value,
+            password: document.getElementById('password' + userId).value,
+            roles: Array.from(document.getElementById('roles' + userId).selectedOptions).map(option => option.text)
+        };
+
+        fetch(`http://localhost:8080/update?id=${userId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Ошибка при добавлении пользователя');
                 }
             });
     }
