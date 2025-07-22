@@ -10,8 +10,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import ru.kata.spring.boot_security.demo.dao.RoleRepository;
-import ru.kata.spring.boot_security.demo.dao.UserRepository;
+import ru.kata.spring.boot_security.demo.repository.RoleRepository;
+import ru.kata.spring.boot_security.demo.repository.UserRepository;
 import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
 
@@ -32,14 +32,14 @@ public class UserServiceImp implements UserService{
         userRepository.deleteById(userId);
     }
 
-@Transactional
-public void addUser(String name, String lastName, String email, String password, String[] rolesArr) {
-    Set<Role> roleSet = Arrays.stream(rolesArr)
-            .map(roleCode -> roleRepository.findByRole("ROLE_" + roleCode))
-            .collect(Collectors.toSet());
-    User user = new User(name, lastName, email, passwordEncoder.encode(password), roleSet);
-    userRepository.save(user);
-}
+    @Transactional
+    public void addUser(String name, String lastName, String email, String password, String[] rolesArr) {
+        Set<Role> roleSet = Arrays.stream(rolesArr)
+                .map(roleCode -> roleRepository.findByRole("ROLE_" + roleCode))
+                .collect(Collectors.toSet());
+        User user = new User(name, lastName, email, passwordEncoder.encode(password), roleSet);
+        userRepository.save(user);
+    }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
