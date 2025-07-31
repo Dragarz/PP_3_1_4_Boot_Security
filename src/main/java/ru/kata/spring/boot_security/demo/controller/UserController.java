@@ -22,8 +22,8 @@ public class UserController {
 
     @GetMapping(value = "/user")
     public String userPage(ModelMap model) {
-        var users = userService.listUsers();
-        model.addAttribute("users", users);
+        var currentUser = userService.getCurrentUser();
+        model.addAttribute("currentUser", currentUser);
         return "user";
     }
 }

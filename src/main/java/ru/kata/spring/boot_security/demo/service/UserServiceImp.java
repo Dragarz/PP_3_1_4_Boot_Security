@@ -21,6 +21,7 @@ public class UserServiceImp implements UserService{
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
+    private final AuthService authService;
 
     @Override
     @Transactional(readOnly = true)
@@ -62,5 +63,10 @@ public class UserServiceImp implements UserService{
         }
 
         userRepository.save(user);
+    }
+
+    @Override
+    public User getCurrentUser() {
+        return authService.getCurrentUser();
     }
 }

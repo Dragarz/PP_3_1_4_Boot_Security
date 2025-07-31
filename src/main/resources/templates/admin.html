@@ -131,7 +131,7 @@
     <div class="header-container">
         <div class="">
             <div class="header-user-info">
-                <span> <b>admin@mail.ru</b> with roles: <b>ADMIN USER</b> </span>
+                <span th:text="${currentUser.email} + ' with roles: ' + ${#strings.listJoin(currentUser.roles.![role], ' ')}">  </span>
             </div>
             <div class="header-logout">
                 <button class="bottom-logout" onclick="logout()">

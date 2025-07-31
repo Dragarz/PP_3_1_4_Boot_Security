@@ -22,10 +22,11 @@ public class AdminController {
     @GetMapping(value = "/admin")
     public String userPage(ModelMap model) {
         var users = userService.listUsers();
+        var currentUser = userService.getCurrentUser();
         model.addAttribute("users", users);
+        model.addAttribute("currentUser", currentUser);
         return "admin";
     }
-
 
     @DeleteMapping(value = "/delete")
     public ResponseEntity<Void> deleteUser(@RequestParam String id) {

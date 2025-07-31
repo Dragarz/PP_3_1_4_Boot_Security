@@ -85,7 +85,7 @@
     <div class="header-container">
         <div class="">
             <div class="header-user-info">
-                <span> <b>admin@mail.ru</b> with roles: <b>ADMIN USER</b> </span>
+                <span th:text="${currentUser.email} + ' with roles: ' + ${#strings.listJoin(currentUser.roles.![role], ' ')}">  </span>
             </div>
             <div class="header-logout">
                 <button class="bottom-logout" onclick="logout()">
@@ -95,15 +95,17 @@
         </div>
     </div>
 
-    <!--SIDE BAR-->
     <div class="body">
         <div class="sidebar">
             <ul class="nav flex-column">
-                <li class="nav-item">
+                <!-- Показывать только администраторам -->
+                <li class="nav-item" th:if="${#lists.contains(currentUser.roles.![role], 'ROLE_ADMIN')}">
                     <a class="nav-link" href="/admin">
                         <span>Admin</span>
                     </a>
                 </li>
+
+                <!-- Доступно всем пользователям -->
                 <li class="nav-item">
                     <a class="nav-link active" href="/user">
                         <span>User</span>
@@ -129,14 +131,14 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr th:each="user : ${users}">
-                                <td th:id="'id' + ${user.id}" th:text="${user.id}"></td>
-                                <td th:id="'username' + ${user.id}" th:text="${user.username}"></td>
-                                <td th:id="'lastname' + ${user.id}" th:text="${user.lastName}"></td>
-                                <td th:id="'email' + ${user.id}" th:text="${user.email}"></td>
-                                <td th:id="'role' + ${user.id}"
-                                    th:attr="data-role-list=${#strings.listJoin(user.roles.![role], ',')}">
-                                    <span th:each="role : ${user.roles}" th:text="${role.role} + ' '"></span>
+                            <tr>
+                                <td th:id="'id' + ${currentUser.id}" th:text="${currentUser.id}"></td>
+                                <td th:id="'username' + ${currentUser.id}" th:text="${currentUser.username}"></td>
+                                <td th:id="'lastname' + ${currentUser.id}" th:text="${currentUser.lastName}"></td>
+                                <td th:id="'email' + ${currentUser.id}" th:text="${currentUser.email}"></td>
+                                <td th:id="'role' + ${currentUser.id}"
+                                    th:attr="data-role-list=${#strings.listJoin(currentUser.roles.![role], ',')}">
+                                    <span th:each="role : ${currentUser.roles}" th:text="${role.role} + ' '"></span>
                                 </td>
                             </tr>
                             </tbody>
