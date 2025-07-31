@@ -11,20 +11,19 @@ import jakarta.persistence.Table;
 @Table(name = "roles")
 public class Role {
 
-    public Role(){
-
-    }
-
-    public Role(String role) {
-        this.role = role;
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "role")
     private String role;
+
+
+    public Role(){}
+
+    public Role(String role) {
+        this.role = role;
+    }
 
     public Long getId() {
         return id;
