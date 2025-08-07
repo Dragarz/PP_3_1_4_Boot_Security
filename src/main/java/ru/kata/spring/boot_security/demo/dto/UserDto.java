@@ -1,5 +1,6 @@
 package ru.kata.spring.boot_security.demo.dto;
 
+import java.util.Set;
 import lombok.Data;
 
 @Data
@@ -8,6 +9,5 @@ public class UserDto {
     private String lastName;
     private String email;
     private String password;
-    private String[] roles;
-
+    private Set<String> roles;
 }

@@ -1,6 +1,5 @@
 package ru.kata.spring.boot_security.demo.service;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,9 +33,9 @@ public class UserServiceImp implements UserService{
     }
 
     @Transactional
-    public void addUser(String name, String lastName, String email, String password, String[] rolesArr) {
-        Set<Role> roleSet = Arrays.stream(rolesArr)
-                .map(roleCode -> roleRepository.findByRole(roleCode))
+    public void addUser(String name, String lastName, String email, String password, Set<String> rolesArr) {
+        Set<Role> roleSet = rolesArr.stream()
+                .map(roleRepository::findByRole)
                 .collect(Collectors.toSet());
         User user = new User(name, lastName, email, passwordEncoder.encode(password), roleSet);
         userRepository.save(user);
@@ -44,11 +43,11 @@ public class UserServiceImp implements UserService{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public void updateUser(long id, String name, String lastName, String email, String password, String[] rolesArr) {
+    public void updateUser(long id, String name, String lastName, String email, String password, Set<String> rolesArr) {
         User user = userRepository.findById(id).get();
 
-        if(rolesArr.length > 0) {
-            Set<Role> roleSet = Arrays.stream(rolesArr)
+        if(!rolesArr.isEmpty()) {
+            Set<Role> roleSet = rolesArr.stream()
                     .map(roleRepository::findByRole)
                     .collect(Collectors.toSet());
 
@@ -68,5 +67,10 @@ public class UserServiceImp implements UserService{
     @Override
     public User getCurrentUser() {
         return authService.getCurrentUser();
+    }
+
+    @Override
+    public User getUserById(long userId) {
+        return userRepository.findById(userId).get();
     }
 }
