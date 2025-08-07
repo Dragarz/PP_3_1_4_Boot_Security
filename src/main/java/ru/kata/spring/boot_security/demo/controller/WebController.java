@@ -13,6 +13,11 @@ public class WebController {
 
     @GetMapping("/user")
     public String userPage() {
-        return "user"; // Если у вас есть страница для обычных пользователей
+        return "user";
+    }
+
+    @GetMapping(value = "/")
+    public String printUsers() {
+        return "index";
     }
 }
