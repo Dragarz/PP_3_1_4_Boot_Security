@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel</title>
+    <title>User Panel</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -76,16 +76,36 @@
             flex: 1;
             transition: all 0.3s;
         }
+
+        /* Новый стиль для уведомлений */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 5px;
+            color: white;
+            z-index: 1000;
+            display: none;
+        }
+        .success {
+            background-color: #28a745;
+        }
+        .error {
+            background-color: #dc3545;
+        }
     </style>
 </head>
 <body>
 <div class="main-content">
+    <!-- Уведомления -->
+    <div id="notification" class="notification"></div>
 
     <!--HEADER-->
     <div class="header-container">
         <div class="">
             <div class="header-user-info">
-                <span th:text="${currentUser.email} + ' with roles: ' + ${#strings.listJoin(currentUser.roles.![role], ' ')}">  </span>
+                <span id="currentUserInfo"></span>
             </div>
             <div class="header-logout">
                 <button class="bottom-logout" onclick="logout()">
@@ -98,8 +118,8 @@
     <div class="body">
         <div class="sidebar">
             <ul class="nav flex-column">
-                <!-- Показывать только администраторам -->
-                <li class="nav-item" th:if="${#lists.contains(currentUser.roles.![role], 'ROLE_ADMIN')}">
+                <!-- Ссылка на админ-панель (будет показана только для ADMIN) -->
+                <li class="nav-item" id="adminLinkItem" style="display: none;">
                     <a class="nav-link" href="/admin">
                         <span>Admin</span>
                     </a>
@@ -130,43 +150,95 @@
                                 <th>Role</th>
                             </tr>
                             </thead>
-                            <tbody>
-                            <tr>
-                                <td th:id="'id' + ${currentUser.id}" th:text="${currentUser.id}"></td>
-                                <td th:id="'username' + ${currentUser.id}" th:text="${currentUser.username}"></td>
-                                <td th:id="'lastname' + ${currentUser.id}" th:text="${currentUser.lastName}"></td>
-                                <td th:id="'email' + ${currentUser.id}" th:text="${currentUser.email}"></td>
-                                <td th:id="'role' + ${currentUser.id}"
-                                    th:attr="data-role-list=${#strings.listJoin(currentUser.roles.![role], ',')}">
-                                    <span th:each="role : ${currentUser.roles}" th:text="${role.role} + ' '"></span>
-                                </td>
-                            </tr>
+                            <tbody id="userTableBody">
+                            <!-- Данные будут заполнены через JavaScript -->
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
-
-
+        </div>
+    </div>
+</div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+    // Функция показа уведомлений
+    function showNotification(message, isSuccess = true) {
+        const notification = document.getElementById('notification');
+        notification.textContent = message;
+        notification.className = `notification ${isSuccess ? 'success' : 'error'}`;
+        notification.style.display = 'block';
 
-    function logout() {
-        fetch(`http://localhost:8080/logout`, {
-            method: 'get',
-            headers: {
-                'Content-Type': 'application/json',
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 3000);
+    }
+
+    // Загрузка данных при открытии страницы
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadCurrentUser();
+    });
+
+    // Загрузка данных текущего пользователя
+    async function loadCurrentUser() {
+        try {
+            const response = await fetch('/api/user/current');
+            if (!response.ok) {
+                throw new Error('Failed to load user data');
             }
+
+            const user = await response.json();
+
+            // Обновляем информацию в хедере
+            document.getElementById('currentUserInfo').textContent =
+                `${user.email} with roles: ${user.roles.map(r => r.role).join(', ')}`;
+
+            // Показываем ссылку на админку, если пользователь админ
+            if (user.roles.some(role => role.role === 'ROLE_ADMIN')) {
+                document.getElementById('adminLinkItem').style.display = 'block';
+            }
+
+            // Заполняем таблицу данными пользователя
+            renderUserTable(user);
+        } catch (error) {
+            console.error('Error:', error);
+            showNotification('Error loading user data: ' + error.message, false);
+        }
+    }
+
+    // Рендеринг таблицы с данными пользователя
+    function renderUserTable(user) {
+        const tbody = document.getElementById('userTableBody');
+        tbody.innerHTML = '';
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${user.id}</td>
+            <td>${user.username}</td>
+            <td>${user.lastName}</td>
+            <td>${user.email}</td>
+            <td>${user.roles.map(r => r.role).join(', ')}</td>
+        `;
+        tbody.appendChild(row);
+    }
+
+    // Выход из системы
+    function logout() {
+        fetch('/logout', {
+            method: 'POST',
+            credentials: 'same-origin'
         })
             .then(response => {
-                if (response.ok) {
-                    location.reload()
-                } else {
-                    alert('Ошибка при удалении пользователя');
+                if (response.redirected) {
+                    window.location.href = response.url;
                 }
+            })
+            .catch(error => {
+                console.error('Logout error:', error);
+                showNotification('Logout failed', false);
             });
     }
 </script>

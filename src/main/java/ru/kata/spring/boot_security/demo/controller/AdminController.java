@@ -1,60 +1,66 @@
 package ru.kata.spring.boot_security.demo.controller;
 
+import java.util.HashMap;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import ru.kata.spring.boot_security.demo.dto.UserDto;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
-@Controller
+@RestController
+@RequestMapping("/api/admin") // Базовый путь для всех методов
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ROLE_ADMIN')")
 public class AdminController {
     private final UserService userService;
 
-    @GetMapping(value = "/admin")
-    public String userPage(ModelMap model) {
-        var users = userService.listUsers();
-        var currentUser = userService.getCurrentUser();
-        model.addAttribute("users", users);
-        model.addAttribute("currentUser", currentUser);
-        return "admin";
+    @GetMapping
+    public ResponseEntity<Map<String, Object>> getAllUsers() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("users", userService.listUsers());
+        response.put("currentUser", userService.getCurrentUser());
+        return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping(value = "/delete")
-    public ResponseEntity<Void> deleteUser(@RequestParam String id) {
-        try {
-            userService.deleteUser(Long.parseLong(id));
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(500).build();
-        }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.ok().build();
     }
 
-    @PostMapping(value = "/add")
+    @PostMapping
     public ResponseEntity<Void> addUser(@RequestBody UserDto userDto) {
-        try {
-            userService.addUser(userDto.getName(), userDto.getLastName(), userDto.getEmail(), userDto.getPassword(), userDto.getRoles());
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(500).build();
-        }
+        userService.addUser(
+                userDto.getName(),
+                userDto.getLastName(),
+                userDto.getEmail(),
+                userDto.getPassword(),
+                userDto.getRoles()
+        );
+        return ResponseEntity.ok().build();
     }
 
-    @PostMapping(value = "/update")
-    public ResponseEntity<Void> updateUser(@RequestParam String id, @RequestBody UserDto userDto) {
-        try {
-            userService.updateUser(Long.parseLong(id), userDto.getName(), userDto.getLastName(), userDto.getEmail(), userDto.getPassword(), userDto.getRoles());
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(500).build();
-        }
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> updateUser(
+            @PathVariable Long id,
+            @RequestBody UserDto userDto) {
+        userService.updateUser(
+                id,
+                userDto.getName(),
+                userDto.getLastName(),
+                userDto.getEmail(),
+                userDto.getPassword(),
+                userDto.getRoles()
+        );
+        return ResponseEntity.ok().build();
     }
 }
